@@ -1,3 +1,8 @@
 (library
  (name a6lib)
  (libraries str Zarith unix))
+
+; (executable
+;  (name theory)
+;  (modules theory)
+;  (libraries str Zarith unix))
