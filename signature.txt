@@ -1,5 +1,5 @@
 Netids (include all members of group, if partnering):
-  [list here]
+  gc5512, ms1438
 
 In doing this homework I used the following sources:
 
@@ -12,7 +12,7 @@ In doing this homework I used the following sources:
 This paper represents my own work in accordance with University regulations.
 
 Signed,
-[replace this line with your name(s)]
+George Chiriac, Milan Sastry
 ------------------------------------------------------------------------
 
 NOTE 1:   Sources you don't need to mention

@@ -1,9 +1,9 @@
-Partner 1's name: 
-Partner 1's login:
+Partner 1's name: George Chiriac
+Partner 1's login: gc5512
 
 (Leave blank if you are working alone)
-Partner 2's name: 
-Partner 2's login:
+Partner 2's name: Milan Sastry
+Partner 2's login: ms1438
 
 Questions on Queues:
 
@@ -32,7 +32,9 @@ a more complex way than is necessary, and potentially have made it
 incorrect.
 
 Show your abstraction function from theory.ml here:
-let abstract (q : int list * int list) : int list = 
+let abstract (q : int list * int list) : int list =
+  match q with
+  | front, back -> front @ (List.rev back)
 
 
 ********************************************************************
@@ -57,16 +59,20 @@ continue.
 (2) What do you have to prove to show that
 M1.emp is properly related to M2.emp?
 
-Theorem:  ...
+Theorem:  abstract M1.emp = M2.emp
 
 
 
 (3) Prove what you claimed you needed to prove in step (2):
 
-Proof by ...:
+Proof by direct eval:
 
-
-
+abstract M1.emp
+== abstract ([], [])                (substitution of emp)
+== [] @ (List.rev [])               (eval)
+== [] @ []                          (Lemma 3)
+== []                               (Lemma 1)
+== M2.emp                           (reverse substitution)
 
 QED!
 
@@ -94,8 +100,12 @@ Now assume the the "if" component of the theorem holds:
 Now using those assumptions, prove the "then" part of the theorem:
 
    abstract (M1.ins (i,q1))                 (LHS)
-==
-...
+== abstract (f, i::b)                       ((1) + eval of M1.ins)
+== f @ List.rev (i::b)                      (eval)
+== f @ ((List.rev b) @ [i])                 (Lemma 4)
+== (f @ (List.rev b)) @ [i]                 (Lemma 2)
+== (abstract q1) @ i                        (reverse eval)
+== q2 @ i                                   (2)
 == M2.ins (i,q2)                            (RHS)
 
 QED!
@@ -103,6 +113,13 @@ QED!
 (6) What do you have to prove to show that
 M1.rem is properly related to M2.rem?
 
-Theorem: ...
+Theorem:
+for all q1:int list * int list,
+for all q2:int list,
+M1.rem q1 == None and M2.rem q2 == None 
+OR
+M1.rem q1 == Some (i, (f, b)) and M2.rem q2 == Some (h, t)
+(for some i, h : int; f, b, t : int list)
+and i == h; abstract (f, b) == t
 
 (You don't have to prove this theorem -- just state it.)
