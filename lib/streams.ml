@@ -64,16 +64,17 @@ let unimplemented = Failure "unimplemented"
 (* Implement the head and tail functions *)
 
 let head (s:'a stream) : 'a =
-  raise unimplemented
+  let Cons (h, t) = Lazy.force s in h
 
 let tail (s:'a stream) : 'a stream =
-  raise unimplemented
+  let Cons (h, t) = Lazy.force s in t
 
 (*>* Problem 2.1.b *>*)
 (* Implement map *)
 
 let rec map (f:'a -> 'b) (s:'a stream) : 'b stream =
-  raise unimplemented
+  let Cons (h, t) = Lazy.force s in
+  lazy (Cons (f h, map f t))
 
 (*>* Problem 2.1.c *>*)
 (* Write a function nth, which returns the nth element of a
@@ -81,10 +82,8 @@ let rec map (f:'a -> 'b) (s:'a stream) : 'b stream =
    words, "nth 0 s" should be equivalent to "head s". *)
 
 let rec nth (n:Z.t) (s:'a stream) : 'a =
-  raise unimplemented
-
-
-
+  if Z.equal n zero then head s
+  else nth (Z.sub n one) (tail s)
 
 (*>* Problem 2.2 *>*)
 
@@ -103,27 +102,44 @@ let rec nth (n:Z.t) (s:'a stream) : 'a =
  * Such a spreadsheet will need to support the following operations:
  *)
 
-type 'a spread_sheet = Z.t (* change me! *)
+type 'a spread_sheet = Z.t stream stream
 
 (* you can assume all coordinates given are non-negative *)
 type coordinates = Z.t * Z.t 
 
+let rec repeat (x: 'a) : 'a stream =
+  lazy (Cons (x, repeat x))
+
 (* a spreadsheet containing all zeros *)
-let zeros : Z.t spread_sheet = zero (* change me! *)
+let zeros : Z.t spread_sheet = repeat (repeat zero)  
 
 (* return the element at the (i,j) coordinate in ss *)
 let get ((i,j):coordinates) (ss:'a spread_sheet) : 'a = 
-  raise unimplemented
+  nth i (nth j ss)
+
 
 (* create a new spreadsheet where the (i,j) element of the spreadsheet
- * contains f i j xij  when xij was the (i,j) element of the input spreadsheet
+ * contains f i j xij when xij was the (i,j) element of the input spreadsheet
  *)
-let map_all (f:Z.t -> Z.t -> 'a -> 'b) (ss:'a spread_sheet) : 'b spread_sheet = 
-  raise unimplemented
+let map_all (f: Z.t -> Z.t -> 'a -> 'b) (ss: 'a spread_sheet) : 'b spread_sheet =
+  let rec map_rows (i: Z.t) (ss: 'a spread_sheet) : 'b spread_sheet =
+    lazy (
+      let Cons (row, rest_rows) = Lazy.force ss in
+      let mapped_row = 
+        let rec map_cols (j: Z.t) (row: 'a stream) : 'b stream =
+          lazy (
+            let Cons (cell, rest_cols) = Lazy.force row in
+            Cons (f j i cell, map_cols (Z.succ j) rest_cols)
+          )
+        in
+        map_cols Z.zero row
+      in
+      Cons (mapped_row, map_rows (Z.succ i) rest_rows)
+    )
+  in
+  map_rows Z.zero ss
 
 (* create an infinite multiplication table in which every cell contains the
  * product of its indices *)
-let multiplication_table = zero (* change me *)
-
-
-
+let multiplication_table = 
+  map_all (fun i j _ -> Z.mul i j) zeros
